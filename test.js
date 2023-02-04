@@ -1,55 +1,18 @@
-var http=require('https');
+import puppeteer from "https://deno.land/x/puppeteer@16.2.0/mod.ts";
 
-exports.handler = (event, context, callback) => {
-    
-    http.get("https://graph.facebook.com/v2.8/?access_token=416110258400269|9EX5IO6WLekHaMj4Xiw1KtrCDe4&id=http://www.imdb.com/title/tt2015381/", function (res) {
-        var noaaResponseString = '';
-        console.log('Status Code: ' + res.statusCode);
-  
-        res.on('data', function (data) {
-            noaaResponseString += data;
-        });
- 
-        res.on('end', function () {
-            var noaaResponseObject = JSON.parse(noaaResponseString);
- 
-            if (!noaaResponseObject.error) {
-               retVal = "Comment count "+noaaResponseObject.share.comment_count +", share count "+noaaResponseObject.share.share_count;
-               callback(null, GetResponse(retVal));
-            }
-           
-        });
-    }).on('error', function (e) {
-        console.log("Communications error: " + e.message);
-    }).end();
-    
-    
-};
+const browser = await puppeteer.launch();
+const page = await browser.newPage();
+await page.goto("https://example.com");
 
-function GetResponse(txt)
-{
+// Get the "viewport" of the page, as reported by the page.
+const dimensions = await page.evaluate(() => {
+  return {
+    width: document.documentElement.clientWidth,
+    height: document.documentElement.clientHeight,
+    deviceScaleFactor: window.devicePixelRatio,
+  };
+});
 
-return {
-  "version": "1.0",
-  "sessionAttributes": {},
-  "response": {
-    "outputSpeech": {
-      "type": "PlainText",
-      "text": txt
-    },
-    "card": {
-      "type": "Simple",
-      "title": "SessionSpeechlet - Welcome",
-      "content": "SessionSpeechlet - Welcome to the Alexa Skills Kit sample. Please tell me your favorite color by saying, my favorite color is red"
-    },
-    "reprompt": {
-      "outputSpeech": {
-        "type": "PlainText",
-        "text": "Please tell me your favorite color by saying, my favorite color is red"
-      }
-    },
-    "shouldEndSession": false
-  }
-}
+console.log("Dimensions:", dimensions);
 
-}
+await browser.close();
